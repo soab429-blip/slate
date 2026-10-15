@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "slate",
+  "version": "${version}",
+  "name": "Slate",
+  "description": "Advanced ghost client for Fabric 1.8.9.",
+  "authors": ["Ren"],
+  "license": "ARR",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "yt.ren.slate.SlateClient"
+    ]
+  },
+  "mixins": [
+    "slate.mixins.json"
+  ],
+  "accessWidener": "slate.accesswidener",
+  "depends": {
+    "minecraft": "1.8.9",
+    "fabricloader": ">=0.19.0"
+  },
+  "breaks": {
+    "pylon": "<0.2.2"
+  }
+}

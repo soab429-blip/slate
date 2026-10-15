@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "package": "yt.ren.slate.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "plugin": "yt.ren.slate.mixin.SlateMixinPlugin",
+  "client": [
+    "client.world.MixinClientWorld",
+    "client.entity.MixinEntity",
+    "client.render.MixinEntityRenderDispatcher",
+    "client.render.MixinGameRenderer",
+    "client.entity.MixinLivingEntity",
+    "client.render.MixinLivingEntityRenderer",
+    "client.entity.MixinLocalClientPlayerEntity",
+    "client.MixinMinecraft",
+    "client.network.MixinClientPlayNetworkHandler",
+    "client.render.MixinPlayerRenderer",
+    "client.input.MixinKeyboard",
+    "client.input.MixinMouse",
+    "client.window.sdl.MixinDisplaySdl",
+    "client.window.sdl.SdlDisplayAccess"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
