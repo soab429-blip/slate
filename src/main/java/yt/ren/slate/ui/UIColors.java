@@ -18,7 +18,7 @@ public class UIColors {
 
     private static float wrappedHue(float hue) {
         hue = hue < 0.0f ? hue + 1.0f : hue;
-        return 1.0f < hue ? hue + -1.0f : hue;
+        return 1.0f < hue ? hue - 1.0f : hue;
     }
 
     private static float hueChannel(float lower, float upper, float hue) {

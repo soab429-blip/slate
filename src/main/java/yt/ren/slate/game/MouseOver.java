@@ -9,7 +9,7 @@ import net.minecraft.world.HitResult;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.event.Events.MouseOverEvent;
 import yt.ren.slate.feature.combat.Piercing;
-import yt.ren.slate.feature.world.GhostHand;
+import yt.ren.slate.feature.block.GhostHand;
 import yt.ren.slate.game.attack.AttackPrediction;
 import yt.ren.slate.util.math.Geometry;
 import yt.ren.slate.util.math.MathUtil;

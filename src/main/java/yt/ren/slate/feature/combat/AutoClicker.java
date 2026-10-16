@@ -246,7 +246,7 @@ public class AutoClicker extends Module {
                         doubleClick = 0;
                     } else {
                         double reciprocal = 1.0 / (double) cps;
-                        interval[0] = (float) (reciprocal + -(double) Float.intBitsToFloat(0x3c656042));
+                        interval[0] = (float) (reciprocal - (double) Float.intBitsToFloat(0x3c656042));
                         if (!addExhaust(interval, activity(c))) {
                             boolean probability = chance(doubleProbability, 0.94f, 0.97f, 30.0);
                             doubleClick = random.below(probability ? 1.0f : 0.0f) ? 1 : 0;

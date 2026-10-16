@@ -34,14 +34,14 @@ public class ScalarTrig {
         }
         boolean negative = (raw >>> 63) != 0;
         double rounded = negative
-                ? (value + -4503599627370496.0) + 4503599627370496.0
-                : (value + 4503599627370496.0) + -4503599627370496.0;
+                ? (value - 4503599627370496.0) + 4503599627370496.0
+                : (value + 4503599627370496.0) - 4503599627370496.0;
         if (exponent < 1023) {
             return negative ? -1.0 : 0.0;
         }
         double difference = rounded - value;
         double result = value + difference;
-        return difference > 0.0 ? result + -1.0 : result;
+        return difference > 0.0 ? result - 1.0 : result;
     }
 
     private static double scalePower(double value, int exponent) {
@@ -286,7 +286,7 @@ public class ScalarTrig {
         }
         if (Integer.compareUnsigned(absolute, 0x40e231d6) < 0) {
             if (Integer.compareUnsigned(absolute, 0x40afeddf) <= 0) {
-                return sinePolynomial(negative ? -THREE_HALF_PI - (double) value : (double) value + -THREE_HALF_PI, false, false);
+                return sinePolynomial(negative ? -THREE_HALF_PI - (double) value : (double) value - THREE_HALF_PI, false, false);
             }
             return cosinePolynomial((double) value + (negative ? TWO_PI : -TWO_PI), false);
         }

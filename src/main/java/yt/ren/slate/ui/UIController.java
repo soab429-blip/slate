@@ -174,15 +174,16 @@ public class UIController {
         float magnitude = Float.intBitsToFloat(encoded & 0x7fffffff);
         float displaced = 8388608.0f + magnitude;
         if (exponent <= 125) {
-            return value * 0.0f;
+            return 0.0f;
         }
-        displaced = (displaced + -8388608.0f) - magnitude;
+        displaced -= 8388608.0f + magnitude;
         if (displaced > 0.5f) {
-            magnitude = (magnitude + displaced) + -1.0f;
+            magnitude += displaced - 1.0f;
         } else {
-            magnitude = magnitude + displaced;
+            magnitude += displaced;
+
             if (displaced <= -0.5f) {
-                magnitude = magnitude + 1.0f;
+                magnitude += 1.0f;
             }
         }
         return encoded < 0 ? Floats.negate(magnitude) : magnitude;

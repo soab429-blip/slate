@@ -205,7 +205,7 @@ public class UIWidgets {
                 }
             }
             if (!module.has(Trait.NO_TOGGLE)) {
-                UIRect toggleRect = new UIRect((title.x + title.width) + -40.0f, title.y, 40.0f, title.height);
+                UIRect toggleRect = new UIRect((title.x + title.width) - 40.0f, title.y, 40.0f, title.height);
                 int[] value = {(module.isEnabled() ? 1 : 0)};
                 UIController.toggle(s, drawing, toggleRect, g, 0, value);
                 if (value[0] != (module.isEnabled() ? 1 : 0)) {

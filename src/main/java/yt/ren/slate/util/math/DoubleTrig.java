@@ -231,7 +231,7 @@ public class DoubleTrig {
             out[1] = (lead - out[0]) + tail;
             return negative ? -quick : quick;
         }
-        double count = bits(0x3fe45f306dc9c883L) * value + 6755399441055744.0 + -6755399441055744.0;
+        double count = bits(0x3fe45f306dc9c883L) * value + 6755399441055744.0 - 6755399441055744.0;
         int quadrant = integer(count);
         double remainder = bits(0xbff921fb54400000L) * count + value;
         double tail = bits(0x3dd0b4611a626331L) * count;

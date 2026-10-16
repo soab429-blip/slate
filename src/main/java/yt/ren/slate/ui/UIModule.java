@@ -421,7 +421,7 @@ public class UIModule extends Module {
             UIController.backdrop(drawing, s.f(0x418));
             UIController.resetLayout(s);
             if (bounds.width > 600.0f) {
-                bounds.x = (float) ((double) (bounds.width + -600.0f) * 0.5 + (double) bounds.x);
+                bounds.x = (float) ((double) (bounds.width - 600.0f) * 0.5 + (double) bounds.x);
                 bounds.width = 600.0f;
             }
             UIController.pushLayout(s, bounds, 8.0f, 12.0f);

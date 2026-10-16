@@ -121,7 +121,7 @@ public class UIPopupRenderer {
         UIRect saved = rect.copy();
         float value = s.f(0x43c + component * 4);
         UIColor handleColor = handle.copy();
-        float centerX = (saved.width + -20.0f) * value + (saved.x + 10.0f);
+        float centerX = (saved.width - 20.0f) * value + (saved.x + 10.0f);
         vector.beginPath();
         float centerY = (float) ((double) saved.height * 0.5 + (double) saved.y);
         vector.circle(centerX, centerY, 10.0f);
@@ -388,7 +388,7 @@ public class UIPopupRenderer {
         UIController.heading(s, drawing, UIText.b("Recently used"));
         UIRect recent = UIController.nextCell(s, 25.0f);
         float x = recent.x;
-        float swatchWidth = (recent.width + -56.0f) * 0.125f;
+        float swatchWidth = (recent.width - 56.0f) * 0.125f;
         vector.setStrokeWidth(2.0f);
         float step = 8.0f + swatchWidth;
         long chosen = 8;

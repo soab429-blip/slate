@@ -428,7 +428,7 @@ public class FontStash {
         float lo = 0.0f;
         float x = input;
         if (magnitude >= 0x3eb17219) {
-            k = magnitude <= 0x3f851592 ? -1 : Sse.cvttss2si(input * 1.442695f + -0.5f);
+            k = magnitude <= 0x3f851592 ? -1 : Sse.cvttss2si(input * 1.442695f - 0.5f);
             hi = input + (float) k * -0.69314575f;
             lo = (float) k * 1.4286068e-06f;
             x = hi - lo;

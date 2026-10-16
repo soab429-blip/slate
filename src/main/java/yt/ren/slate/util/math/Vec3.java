@@ -37,7 +37,7 @@ public class Vec3 {
     }
 
     public Vec3 subtractStandingEyeHeight() {
-        return new Vec3(x, y + -1.62, z);
+        return new Vec3(x, y - 1.62, z);
     }
 
     public double lengthSquared() {

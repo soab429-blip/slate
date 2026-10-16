@@ -118,11 +118,11 @@ public class TimerRange extends Module {
         KeyBinding right = options.keyBindings[5];
         float f = forwardKey.pressed ? 1.0f : 0.0f;
         if (back.pressed) {
-            f = f + -1.0f;
+            f -= 1.0f;
         }
         float side = left.pressed ? 1.0f : 0.0f;
         if (right.pressed) {
-            side = side + -1.0f;
+            side -= 1.0f;
         }
         forward = f;
         strafe = side;

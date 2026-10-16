@@ -4,7 +4,7 @@ import yt.ren.slate.aim.rotation.RotationLifecycle;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
 import yt.ren.slate.event.EventTypes;
-import yt.ren.slate.feature.player.ItemUse;
+import yt.ren.slate.feature.utility.ItemUse;
 import yt.ren.slate.game.HeldItem;
 import yt.ren.slate.hook.ClientHooks;
 import yt.ren.slate.module.Category;

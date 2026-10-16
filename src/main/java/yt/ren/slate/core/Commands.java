@@ -2,7 +2,7 @@ package yt.ren.slate.core;
 
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.network.packet.c2s.play.CommandSuggestionsC2SPacket;
-import yt.ren.slate.feature.player.Friends;
+import yt.ren.slate.feature.utility.Friends;
 import yt.ren.slate.hook.ClientHooks;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.text.ByteTextBuffer;

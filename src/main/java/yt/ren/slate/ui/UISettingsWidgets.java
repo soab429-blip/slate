@@ -168,7 +168,7 @@ public class UISettingsWidgets extends SettingsWidgets {
         vector.setFillColor(gray(bits(0x3f5dddde)));
         vector.setFontSize(15.0f);
         drawing.alignedText(row, 0, 0, label);
-        UIRect toggle = new UIRect((row.x + row.width) + -40.0f, row.y, 40.0f, row.height);
+        UIRect toggle = new UIRect((row.x + row.width) - 40.0f, row.y, 40.0f, row.height);
         int[] value = {(setting.get() ? 1 : 0)};
         boolean changed = UIController.toggle(state, drawing, toggle, setting.uiState(), 0, value);
         setting.set((value[0]) != 0);
@@ -195,7 +195,7 @@ public class UISettingsWidgets extends SettingsWidgets {
         vector.setFontSize(15.0f);
         drawing.alignedText(row, 0, 0, label);
         float x = (float) ((double) row.x + (double) row.width * 0.5);
-        float y = (row.y + 10.0f) + -2.0f;
+        float y = (row.y + 10.0f) - 2.0f;
         float width = (float) ((double) row.width * 0.5 - 2.0);
         UIRect bar = new UIRect(x, y, width, 4.0f);
         vector.setFillColor(gray(UIController.hovered(state, row) ? bits(0x3ea0a0a1) : bits(0x3e808081)));
@@ -243,7 +243,7 @@ public class UISettingsWidgets extends SettingsWidgets {
         vector.setFontSize(15.0f);
         drawing.alignedText(row, 0, 0, label);
         float start = (float) ((double) row.x + (double) row.width * 0.5);
-        float y = (row.y + 10.0f) + -2.0f;
+        float y = row.y + 8.0f;
         float width = (float) ((double) row.width * 0.5 - 2.0);
         UIRect bar = new UIRect(start, y, width, 4.0f);
         vector.setFillColor(gray(UIController.hovered(state, row) ? bits(0x3ea0a0a1) : bits(0x3e808081)));
@@ -443,7 +443,7 @@ public class UISettingsWidgets extends SettingsWidgets {
         vector.setFillColor(gray(bits(0x3f5dddde)));
         vector.setFontSize(15.0f);
         drawing.alignedText(new UIRect(row.x, row.y, row.width, 20.0f), 0, 0, label);
-        UIRect swatch = new UIRect((row.x + row.width) + -40.0f, row.y, 40.0f, 20.0f);
+        UIRect swatch = new UIRect((row.x + row.width) - 40.0f, row.y, 40.0f, 20.0f);
         vector.setStrokeColor(gray(bits(0x3e808081)));
         vector.setStrokeWidth(2.0f);
         drawing.strokeRoundedRectangle(swatch, 10.0f);

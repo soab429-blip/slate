@@ -32,7 +32,7 @@ public class GaussianSampler {
         }
         raw += 0x4afb0d;
         int exponent = (raw >>> 23) + adjustment;
-        float f = bits((raw & 0x7fffff) + 0x3f3504f3) + -1.0f;
+        float f = bits((raw & 0x7fffff) + 0x3f3504f3) - 1.0f;
         float ratio = f / (2.0f + f);
         float square = ratio * ratio;
         float fourth = square * square;
@@ -55,9 +55,9 @@ public class GaussianSampler {
         float radius;
         do {
             float first = random.range(0.0f, 1.0f);
-            x = (first + first) + -1.0f;
+            x = (first + first) - 1.0f;
             float second = random.range(0.0f, 1.0f);
-            y = (second + second) + -1.0f;
+            y = (second + second) - 1.0f;
             radius = Geometry.angleLength(new Rotation(x, y));
         } while (radius >= 1.0f || radius == 0.0f);
         float factorSquared = (logarithmGameFloat(radius) * -2.0f) / radius;

@@ -38,12 +38,12 @@ public class RotationApply {
         if (exponent <= 125) {
             return value * 0.0f;
         }
-        difference = (difference + -8388608.0f) - absolute;
+        difference -= 8388608.0f + absolute;
         float result = absolute + difference;
         if (difference > 0.5f) {
-            result = result + -1.0f;
+            result -= 1.0f;
         } else if (difference <= -0.5f) {
-            result = result + 1.0f;
+            result += 1.0f;
         }
         if ((bits & 0x80000000) != 0) {
             result = Float.intBitsToFloat(Float.floatToRawIntBits(result) ^ 0x80000000);
