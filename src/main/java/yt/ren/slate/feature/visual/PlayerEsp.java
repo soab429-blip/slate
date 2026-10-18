@@ -2,7 +2,6 @@ package yt.ren.slate.feature.visual;
 
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.entity.living.player.PlayerEntity;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
 import yt.ren.slate.event.EventTypes;
@@ -12,7 +11,7 @@ import yt.ren.slate.game.NameColors;
 import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
-import yt.ren.slate.render.Primitives;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.render.ScreenProjection;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ChoiceSetting;
@@ -175,37 +174,28 @@ public class PlayerEsp extends Module {
         QSort.sort(entries, count, PlayerEsp::compareDistance);
     }
 
-    private static void drawHealth(Entry entry, float x, float top, float bottom) {
+    private static void drawHealth(DrawList draw, Entry entry, float x, float top, float bottom) {
         float level = interpolateFloat(bottom, top, entry.healthFraction);
-        GL11.glColor3f(0.0f, 0.0f, 0.0f);
-        GL11.glBegin(1);
-        GL11.glVertex2f(x, top);
-        GL11.glVertex2f(x, level);
-        GL11.glEnd();
+        draw.color(0.0f, 0.0f, 0.0f);
+        draw.line(x, top, x, level);
         if (entry.absorptionFraction > 0.0f) {
             float next = interpolateFloat(level, bottom, entry.absorptionFraction);
-            GL11.glColor3f(1.0f, 0.67f, 0.0f);
-            GL11.glBegin(1);
-            GL11.glVertex2f(x, level);
-            GL11.glVertex2f(x, next);
-            GL11.glEnd();
+            draw.color(1.0f, 0.67f, 0.0f);
+            draw.line(x, level, x, next);
             level = next;
         }
         float red = interpolateFloat(1.0f, 0.0f, entry.healthFraction);
         float green = interpolateFloat(0.0f, 1.0f, entry.healthFraction);
-        GL11.glColor3f(red, green, 0.0f);
-        GL11.glBegin(1);
-        GL11.glVertex2f(x, level);
-        GL11.glVertex2f(x, bottom);
-        GL11.glEnd();
+        draw.color(red, green, 0.0f);
+        draw.line(x, level, x, bottom);
     }
 
     void renderWorld(WorldRenderEvent event) {
         if (count == 0 || mode.index() != 1) {
             return;
         }
-        GL11.glEnable(0xbe2);
-        GL11.glLineWidth(lineWidth.get());
+        DrawList draw = event.draw;
+        draw.lineWidth(lineWidth.get());
         float partial = event.partialTick;
         ClientGameContext c = event.game();
         EntityRenderDispatcher manager = c.client.getEntityRenderDispatcher();
@@ -218,26 +208,23 @@ public class PlayerEsp extends Module {
             Entry entry = entries[index];
             Vec3 point = entry.previous.interpolate(entry.current, partial);
             Vec3 relative = point.subtract(event.camera);
-            GL11.glPushMatrix();
-            GL11.glTranslatef((float) relative.x, (float) (relative.y + 1.0), (float) relative.z);
-            GL11.glScalef(0.4f, 1.0f, 0.4f);
+            draw.push();
+            draw.translate((float) relative.x, (float) (relative.y + 1.0), (float) relative.z);
+            draw.scale(0.4f, 1.0f, 0.4f);
             if (show2dBox.get() || entry.target == 1) {
-                Primitives.beginCubeVertices();
                 float[] color = renderColor(entry, partial);
                 if (filled.get()) {
-                    GL11.glColor4f(color[0], color[1], color[2], 0.2f);
-                    Primitives.drawFilledCube();
+                    draw.color(color[0], color[1], color[2], 0.2f);
+                    draw.fillCube();
                 }
-                GL11.glColor3f(color[0], color[1], color[2]);
-                Primitives.drawCubeOutline();
-                Primitives.endPrimitiveVertices();
+                draw.color(color[0], color[1], color[2]);
+                draw.outlineCube();
             }
             if (showHealthBar.get()) {
-                GL11.glRotatef(Floats.negate(yaw), 0.0f, 1.0f, 0.0f);
-                GL11.glColor4f(0.0f, 1.0f, 0.0f, 0.75f);
-                drawHealth(entry, 2.0f, 1.0f, -1.0f);
+                draw.rotate(Floats.negate(yaw), 0.0f, 1.0f, 0.0f);
+                drawHealth(draw, entry, 2.0f, 1.0f, -1.0f);
             }
-            GL11.glPopMatrix();
+            draw.pop();
             ++index;
         } while (index < count);
     }
@@ -250,11 +237,8 @@ public class PlayerEsp extends Module {
         if (count == 0 || mode.index() != 0) {
             return;
         }
-        GL11.glEnable(0xbe2);
-        GL11.glLineWidth(lineWidth.get());
-        if (count == 0) {
-            return;
-        }
+        DrawList draw = event.draw;
+        draw.lineWidth(lineWidth.get());
         float partial = event.partialTick;
         int index = 0;
         do {
@@ -285,22 +269,20 @@ public class PlayerEsp extends Module {
                 if (complete && (inside(minimum, event) || inside(maximum, event))) {
                     float[] color = renderColor(entry, partial);
                     if (show2dBox.get() || entry.target == 1) {
-                        Primitives.beginQuadVertices();
-                        GL11.glPushMatrix();
-                        GL11.glTranslatef(minimum[0], minimum[1], 0.0f);
-                        GL11.glScalef(maximum[0] - minimum[0], maximum[1] - minimum[1], 1.0f);
+                        draw.push();
+                        draw.translate(minimum[0], minimum[1], 0.0f);
+                        draw.scale(maximum[0] - minimum[0], maximum[1] - minimum[1], 1.0f);
                         if (filled.get()) {
-                            GL11.glColor4f(color[0], color[1], color[2], 0.25f);
-                            Primitives.drawFilledQuad();
+                            draw.color(color[0], color[1], color[2], 0.25f);
+                            draw.fillQuad();
                         }
-                        GL11.glColor3f(color[0], color[1], color[2]);
-                        Primitives.drawQuadOutline();
-                        GL11.glPopMatrix();
-                        Primitives.endPrimitiveVertices();
+                        draw.color(color[0], color[1], color[2]);
+                        draw.outlineQuad();
+                        draw.pop();
                     }
                     if (showHealthBar.get()) {
                         float x = ((minimum[0] - lineWidth.get()) - 1.0f) - 4.0f;
-                        drawHealth(entry, x, minimum[1], maximum[1]);
+                        drawHealth(draw, entry, x, minimum[1], maximum[1]);
                     }
                 }
             }

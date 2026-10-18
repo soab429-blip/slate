@@ -1,5 +1,6 @@
 package yt.ren.slate.ui.backend;
 
+import yt.ren.slate.render.DrawBackend;
 import yt.ren.slate.ui.vector.VectorContext;
 
 public interface UIBackend {
@@ -18,4 +19,6 @@ public interface UIBackend {
     void pushState();
 
     void popState();
+
+    DrawBackend createDrawBackend();
 }

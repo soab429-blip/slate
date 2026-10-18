@@ -14,8 +14,8 @@ import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.module.ModuleRegistry.ToggleEvent;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.render.GLSM;
-import yt.ren.slate.render.Primitives;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ScalarSetting;
 import yt.ren.slate.text.TextBuffer;
@@ -167,13 +167,12 @@ public class Indicators extends Module {
         EntityRenderDispatcher manager = c.client.getEntityRenderDispatcher();
         TextRenderer font = manager.textRenderer;
         float yaw = manager.cameraYaw;
-        Primitives.beginPointerVertices();
+        DrawList draw = event.draw;
         float centerX = event.width * 0.5f;
         float centerY = event.height * 0.5f;
-        GL11.glPushMatrix();
-        GL11.glTranslatef(centerX, centerY, 0.0f);
-        GL11.glLineWidth(1.0f);
-        GL11.glEnable(0xb20);
+        draw.push();
+        draw.translate(centerX, centerY, 0.0f);
+        draw.lineWidth(1.0f);
         double pulse = DoubleTrig.sine(runtime.clock.now() * 20.0);
         if (count != 0) {
             float alpha = (float) (pulse * 0.5 + 0.5);
@@ -187,14 +186,15 @@ public class Indicators extends Module {
                 double dz = (double) z - camera.z;
                 double degrees = CrtMath.atan2(dz, dx) * 180.0 / 3.141592653589793 - 90.0;
                 float angle = Geometry.wrapYaw((float) degrees - yaw);
-                GL11.glPushMatrix();
-                GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                draw.push();
+                draw.rotate(angle, 0.0f, 0.0f, 1.0f);
                 float scale = scaleSetting.get();
-                GL11.glTranslatef(0.0f, Floats.negate(radius.get()), 0.0f);
-                GL11.glScalef(scale, scale, scale);
+                draw.translate(0.0f, Floats.negate(radius.get()), 0.0f);
+                draw.scale(scale, scale, scale);
                 if (entry.label != null) {
-                    GL11.glPushMatrix();
-                    GL11.glRotatef(Floats.negate(angle), 0.0f, 0.0f, 1.0f);
+                    draw.push();
+                    draw.rotate(Floats.negate(angle), 0.0f, 0.0f, 1.0f);
+                    draw.beginExternal();
                     if (event.managed == 1) {
                         GLSM.enableTexture();
                         GLSM.color(1.0f, 1.0f, 1.0f, 1.0f);
@@ -209,21 +209,21 @@ public class Indicators extends Module {
                     } else {
                         GL11.glDisable(0xde1);
                     }
-                    GL11.glPopMatrix();
+                    draw.endExternal();
+                    draw.pop();
                 }
-                GL11.glTranslatef(0.0f, -15.0f, 0.0f);
-                GL11.glScalef(5.0f, 5.0f, 5.0f);
+                draw.translate(0.0f, -15.0f, 0.0f);
+                draw.scale(5.0f, 5.0f, 5.0f);
                 int colorIndex = entry.entityType - 10;
-                GL11.glColor4f(RED[colorIndex], GREEN[colorIndex], BLUE[colorIndex], alpha);
-                Primitives.drawFilledPointer();
-                GL11.glColor4f(0.0f, 0.0f, 0.0f, alpha);
-                Primitives.drawPointerOutline();
-                GL11.glPopMatrix();
+                draw.color(RED[colorIndex], GREEN[colorIndex], BLUE[colorIndex], alpha);
+                draw.fillPointer();
+                draw.color(0.0f, 0.0f, 0.0f, alpha);
+                draw.outlinePointer();
+                draw.pop();
                 ++index;
             } while (index < count);
         }
-        GL11.glPopMatrix();
-        Primitives.endPrimitiveVertices();
+        draw.pop();
     }
 
     @Override

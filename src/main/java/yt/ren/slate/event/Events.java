@@ -4,6 +4,7 @@ import net.minecraft.world.World;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.event.Event;
 import yt.ren.slate.module.Module;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.util.math.Vec3;
 import yt.ren.slate.util.structs.Rotation;
 
@@ -55,12 +56,14 @@ public class Events {
         public final Vec3 camera;
         public final float partialTick;
         public final int managed;
+        public final DrawList draw;
 
-        public WorldRenderEvent(ClientGameContext context, Vec3 camera, float partialTick, int managed) {
+        public WorldRenderEvent(ClientGameContext context, Vec3 camera, float partialTick, int managed, DrawList draw) {
             super(context);
             this.camera = camera;
             this.partialTick = partialTick;
             this.managed = managed;
+            this.draw = draw;
         }
 
         public ClientGameContext game() {
@@ -76,9 +79,11 @@ public class Events {
         public final FloatBuffer projection;
         public final float partialTick;
         public final int managed;
+        public final DrawList draw;
 
         public ScreenRenderEvent(ClientGameContext context, Vec3 camera, float width, float height,
-                                 FloatBuffer modelview, FloatBuffer projection, float partialTick, int managed) {
+                                 FloatBuffer modelview, FloatBuffer projection, float partialTick, int managed,
+                                 DrawList draw) {
             super(context);
             this.camera = camera;
             this.width = width;
@@ -87,6 +92,7 @@ public class Events {
             this.projection = projection;
             this.partialTick = partialTick;
             this.managed = managed;
+            this.draw = draw;
         }
 
         public ClientGameContext game() {

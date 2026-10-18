@@ -14,8 +14,8 @@ import yt.ren.slate.event.Events.WorldRenderEvent;
 import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.render.GLSM;
-import yt.ren.slate.render.Primitives;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ColorSetting;
 import yt.ren.slate.setting.ListSetting;
@@ -196,32 +196,35 @@ public class ItemEsp extends Module {
         GL11.glTranslatef((float) point.x, (float) (point.y + 0.3), (float) point.z);
     }
 
+    private static void translateItem(DrawList draw, Vec3 point) {
+        draw.translate((float) point.x, (float) (point.y + 0.3), (float) point.z);
+    }
+
     void render(WorldRenderEvent event) {
         if (count == 0) {
             return;
         }
-        GL11.glEnable(0xbe2);
+        DrawList draw = event.draw;
         float partial = event.partialTick;
-        Primitives.beginCubeVertices();
         if (count != 0) {
             double fraction = partial;
             long index = 0;
             do {
                 Entry entry = entries[(int) index];
                 Vec3 point = renderPosition(entry, event, fraction);
-                GL11.glPushMatrix();
-                translateItem(point);
-                GL11.glScalef(0.3f, 0.3f, 0.3f);
-                GL11.glColor4f(entry.color[0], entry.color[1], entry.color[2], 0.4f);
-                Primitives.drawFilledCube();
-                GL11.glPopMatrix();
+                draw.push();
+                translateItem(draw, point);
+                draw.scale(0.3f, 0.3f, 0.3f);
+                draw.color(entry.color[0], entry.color[1], entry.color[2], 0.4f);
+                draw.fillCube();
+                draw.pop();
                 ++index;
             } while (Long.compareUnsigned(index, count) < 0);
         }
-        Primitives.endPrimitiveVertices();
         if (!showCount.get()) {
             return;
         }
+        draw.flush();
         ClientGameContext c = event.game();
         EntityRenderDispatcher manager = c.client.getEntityRenderDispatcher();
         TextRenderer font = manager.textRenderer;

@@ -3,7 +3,6 @@ package yt.ren.slate.feature.combat;
 import net.minecraft.client.entity.living.player.RemoteClientPlayerEntity;
 import net.minecraft.entity.living.player.PlayerEntity;
 import net.minecraft.network.packet.s2c.play.*;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.aim.rotation.RotationLifecycle;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
@@ -15,7 +14,7 @@ import yt.ren.slate.game.attack.AttackTargetCache;
 import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
-import yt.ren.slate.render.Primitives;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ColorSetting;
 import yt.ren.slate.setting.RangeSetting;
@@ -311,25 +310,24 @@ public class Backtrack extends Module {
         double fraction = event.partialTick;
         Vec3 point = previousRender.interpolate(currentRender, fraction);
         Vec3 relative = point.subtract(event.camera);
-        Primitives.beginCubeVertices();
-        GL11.glLineWidth(indicatorLineWidth.get());
-        GL11.glPushMatrix();
-        GL11.glTranslatef((float) relative.x, (float) (relative.y + 1.0), (float) relative.z);
-        GL11.glScalef(0.3f, 1.0f, 0.3f);
+        DrawList draw = event.draw;
+        draw.lineWidth(indicatorLineWidth.get());
+        draw.push();
+        draw.translate((float) relative.x, (float) (relative.y + 1.0), (float) relative.z);
+        draw.scale(0.3f, 1.0f, 0.3f);
         if (indicatorRotate.get()) {
             float yaw = previousYaw + (currentYaw - previousYaw) * event.partialTick;
-            GL11.glRotatef(180.0f - yaw, 0.0f, 1.0f, 0.0f);
+            draw.rotate(180.0f - yaw, 0.0f, 1.0f, 0.0f);
         }
         if (indicatorFilled.get()) {
             float[] color = indicatorColor.liveChannels();
-            GL11.glColor4f(color[0], color[1], color[2], 0.4f);
-            Primitives.drawFilledCube();
+            draw.color(color[0], color[1], color[2], 0.4f);
+            draw.fillCube();
         }
         float[] color = indicatorColor.liveChannels();
-        GL11.glColor3f(color[0], color[1], color[2]);
-        Primitives.drawCubeOutline();
-        GL11.glPopMatrix();
-        Primitives.endPrimitiveVertices();
+        draw.color(color[0], color[1], color[2]);
+        draw.outlineCube();
+        draw.pop();
     }
 
     @Override

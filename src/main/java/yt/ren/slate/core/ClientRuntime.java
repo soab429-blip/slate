@@ -29,6 +29,7 @@ import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.module.ModuleList;
 import yt.ren.slate.module.ModuleRegistry;
 import yt.ren.slate.net.ChannelBridge;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.setting.SettingLists;
 import yt.ren.slate.ui.UIDrawing;
 import yt.ren.slate.ui.UIModule;
@@ -79,6 +80,7 @@ public class ClientRuntime {
     public volatile int bypass;
 
     public UISurface surface;
+    public DrawList drawList;
     public int overlayWidth;
     public int overlayHeight;
     public final FloatBuffer savedModelview = BufferUtils.createFloatBuffer(16);
@@ -214,7 +216,9 @@ public class ClientRuntime {
         } while ((w0 | w1 | w2 | w3) == 0);
         runtime.random.seed(w0, w1, w2, w3);
 
-        runtime.surface = UIDrawing.create();
+        UIDrawing drawing = UIDrawing.create();
+        runtime.surface = drawing;
+        runtime.drawList = drawing == null ? null : new DrawList(drawing.backend.createDrawBackend());
         runtime.configuration.loadGlobalFile();
     }
 

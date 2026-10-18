@@ -6,8 +6,6 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkSource;
 import net.minecraft.world.chunk.WorldChunk;
 import net.minecraft.world.chunk.WorldChunkSection;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
 import yt.ren.slate.event.EventTypes;
@@ -17,6 +15,7 @@ import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.module.ModuleRegistry.ToggleEvent;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ListSetting;
 import yt.ren.slate.setting.ScalarSetting;
@@ -27,9 +26,6 @@ import yt.ren.slate.util.math.CrtMath;
 import yt.ren.slate.util.math.Sse;
 import yt.ren.slate.util.math.Vec3;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,9 +61,9 @@ public class BlockEsp extends Module {
     private static class Chunk {
         final long key;
         final List<Block> blocks = new ArrayList<>();
-        ByteBuffer vertices = BufferUtils.createByteBuffer(0);
-        ShortBuffer indices = BufferUtils.createShortBuffer(0);
-        int vertexCount;
+        float[] vertices = new float[0];
+        int[] colors = new int[0];
+        short[] indices = new short[0];
         int indexCount;
 
         Chunk(long key) {
@@ -167,33 +163,33 @@ public class BlockEsp extends Module {
 
     private static void rebuildMesh(Chunk chunk) {
         int blocks = chunk.blocks.size();
-        ByteBuffer vertices = BufferUtils.createByteBuffer(blocks * 8 * 16).order(ByteOrder.nativeOrder());
-        ShortBuffer indices = BufferUtils.createShortBuffer(blocks * INDICES.length);
+        float[] vertices = new float[blocks * 8 * 3];
+        int[] colors = new int[blocks * 8];
+        short[] indices = new short[blocks * INDICES.length];
         int vertexCount = 0;
         int indexCount = 0;
         for (Block source : chunk.blocks) {
             int base = vertexCount;
             ColoredItem style = source.style;
-            byte red = (byte) Sse.cvttss2si(style.color[0] * 255.0f);
-            byte green = (byte) Sse.cvttss2si(style.color[1] * 255.0f);
-            byte blue = (byte) Sse.cvttss2si(style.color[2] * 255.0f);
+            int red = Sse.cvttss2si(style.color[0] * 255.0f) & 0xFF;
+            int green = Sse.cvttss2si(style.color[1] * 255.0f) & 0xFF;
+            int blue = Sse.cvttss2si(style.color[2] * 255.0f) & 0xFF;
+            int color = red | green << 8 | blue << 16 | 0xFF000000;
             for (int vertex = 0; vertex < 8; ++vertex) {
-                vertices.putFloat(VERTICES[vertex * 3] + (float) source.x);
-                vertices.putFloat(VERTICES[vertex * 3 + 1] + (float) source.y);
-                vertices.putFloat(VERTICES[vertex * 3 + 2] + (float) source.z);
-                vertices.put(red).put(green).put(blue).put((byte) 255);
+                vertices[vertexCount * 3] = VERTICES[vertex * 3] + (float) source.x;
+                vertices[vertexCount * 3 + 1] = VERTICES[vertex * 3 + 1] + (float) source.y;
+                vertices[vertexCount * 3 + 2] = VERTICES[vertex * 3 + 2] + (float) source.z;
+                colors[vertexCount] = color;
                 ++vertexCount;
             }
             for (int offset : INDICES) {
-                indices.put((short) (base + offset));
+                indices[indexCount] = (short) (base + offset);
                 ++indexCount;
             }
         }
-        vertices.flip();
-        indices.flip();
         chunk.vertices = vertices;
+        chunk.colors = colors;
         chunk.indices = indices;
-        chunk.vertexCount = vertexCount;
         chunk.indexCount = indexCount;
     }
 
@@ -371,9 +367,8 @@ public class BlockEsp extends Module {
         if (cache.isEmpty()) {
             return;
         }
-        GL11.glEnableClientState(0x8074);
-        GL11.glEnableClientState(0x8076);
-        GL11.glLineWidth(lineWidth.get());
+        DrawList draw = event.draw;
+        draw.lineWidth(lineWidth.get());
         long requested = nativeUnsigned(blockRenderLimit.get() * 24.0f);
         long limit = shouldLimitBlockRender.get() ? requested : 0x1000;
         Vec3 camera = event.camera;
@@ -384,28 +379,16 @@ public class BlockEsp extends Module {
             double dx = cameraX - ((double) chunkX(chunk.key) + 0.5);
             double dz = cameraZ - ((double) chunkZ(chunk.key) + 0.5);
             if (!(CrtMath.hypot(dx, dz) > (double) range)) {
-                GL11.glPushMatrix();
+                draw.push();
                 Vec3 origin = new Vec3(chunkX(chunk.key) << 4, 0.0, chunkZ(chunk.key) << 4);
                 Vec3 point = origin.subtract(event.camera);
-                GL11.glTranslatef((float) point.x, (float) point.y, (float) point.z);
-                ByteBuffer vertices = chunk.vertices;
-                vertices.position(0);
-                GL11.glVertexPointer(3, 0x1406, 16, vertices);
-                vertices.position(12);
-                GL11.glColorPointer(3, 0x1401, 16, vertices.slice());
-                vertices.position(0);
+                draw.translate((float) point.x, (float) point.y, (float) point.z);
                 long amount = Long.compareUnsigned(limit, chunk.indexCount) < 0 ? limit : chunk.indexCount;
-                ShortBuffer indices = chunk.indices;
-                indices.position(0);
-                indices.limit((int) amount);
-                GL11.glDrawElements(1, indices);
-                indices.limit(chunk.indexCount);
-                GL11.glPopMatrix();
+                draw.lines(chunk.vertices, chunk.colors, chunk.indices, (int) amount);
+                draw.pop();
                 range = rangeSetting.get();
             }
         }
-        GL11.glDisableClientState(0x8074);
-        GL11.glDisableClientState(0x8076);
     }
 
     void clear() {

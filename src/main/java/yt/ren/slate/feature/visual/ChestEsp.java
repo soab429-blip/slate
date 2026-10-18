@@ -3,7 +3,6 @@ package yt.ren.slate.feature.visual;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
 import yt.ren.slate.event.EventTypes;
@@ -11,7 +10,7 @@ import yt.ren.slate.event.Events.WorldRenderEvent;
 import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
-import yt.ren.slate.render.Primitives;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ColorSetting;
 import yt.ren.slate.setting.ScalarSetting;
@@ -114,28 +113,27 @@ public class ChestEsp extends Module {
     }
 
     void render(WorldRenderEvent event) {
-        Primitives.beginCubeVertices();
-        GL11.glLineWidth(lineWidth.get());
+        DrawList draw = event.draw;
+        draw.lineWidth(lineWidth.get());
         if (count != 0) {
             int index = 0;
             do {
                 float[] color = colorFor(blockIds[index]);
                 Vec3 relative = positions[index].subtract(event.camera);
                 Vec3 center = relative.add(new Vec3(0.5, 0.5, 0.5));
-                GL11.glPushMatrix();
-                GL11.glTranslatef((float) center.x, (float) center.y, (float) center.z);
-                GL11.glScalef(0.5f, 0.5f, 0.5f);
+                draw.push();
+                draw.translate((float) center.x, (float) center.y, (float) center.z);
+                draw.scale(0.5f, 0.5f, 0.5f);
                 if (filled.get()) {
-                    GL11.glColor4f(color[0], color[1], color[2], 0.4f);
-                    Primitives.drawFilledCube();
+                    draw.color(color[0], color[1], color[2], 0.4f);
+                    draw.fillCube();
                 }
-                GL11.glColor3f(color[0], color[1], color[2]);
-                Primitives.drawCubeOutline();
-                GL11.glPopMatrix();
+                draw.color(color[0], color[1], color[2]);
+                draw.outlineCube();
+                draw.pop();
                 ++index;
             } while (index < count);
         }
-        Primitives.endPrimitiveVertices();
     }
 
     @Override

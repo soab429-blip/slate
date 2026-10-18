@@ -1,6 +1,7 @@
 package yt.ren.slate.ui.backend.gl;
 
 import org.lwjgl.opengl.GL11;
+import yt.ren.slate.render.DrawBackend;
 import yt.ren.slate.ui.backend.RenderTarget;
 import yt.ren.slate.ui.backend.UIBackend;
 import yt.ren.slate.ui.vector.VectorContext;
@@ -89,5 +90,10 @@ public class GlUIBackend implements UIBackend {
     @Override
     public void popState() {
         GL11.glPopAttrib();
+    }
+
+    @Override
+    public DrawBackend createDrawBackend() {
+        return new GlDrawBackend();
     }
 }

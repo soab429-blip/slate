@@ -9,8 +9,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.HitResult;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.aim.rotation.RotationLifecycle;
 import yt.ren.slate.aim.rotation.SharedRotation;
 import yt.ren.slate.core.ClientGameContext;
@@ -21,7 +19,7 @@ import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.module.ModuleRegistry.ToggleEvent;
-import yt.ren.slate.render.Primitives;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ColorSetting;
 import yt.ren.slate.setting.ScalarSetting;
@@ -32,7 +30,6 @@ import yt.ren.slate.util.math.Vec3;
 import yt.ren.slate.util.structs.Bounds;
 import yt.ren.slate.util.structs.Rotation;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -55,7 +52,7 @@ public class Trajectories extends Module {
     private final List<Bounds> bounds = new ArrayList<>();
     private int pointCount;
     private int hitColor;
-    private final FloatBuffer points = BufferUtils.createFloatBuffer(300);
+    private final float[] points = new float[300];
     private int showBounds;
     private Bounds hitBounds = new Bounds(Vec3.ZERO, Vec3.ZERO);
     private float gravity;
@@ -273,36 +270,31 @@ public class Trajectories extends Module {
             int index = 0;
             do {
                 origin = origin.add(motion);
-                points.put(index * 3, (float) (origin.x - camera.x));
-                points.put(index * 3 + 1, (float) (origin.y - camera.y));
-                points.put(index * 3 + 2, (float) (origin.z - camera.z));
+                points[index * 3] = (float) (origin.x - camera.x);
+                points[index * 3 + 1] = (float) (origin.y - camera.y);
+                points[index * 3 + 2] = (float) (origin.z - camera.z);
                 motion = motion.scale(DRAG);
                 motion = new Vec3(motion.x, motion.y - (double) gravity, motion.z);
                 ++index;
             } while (index < pointCount);
         }
-        GL11.glEnable(0xbe2);
-        GL11.glLineWidth(lineWidth.get());
+        DrawList draw = event.draw;
+        draw.lineWidth(lineWidth.get());
         float[] color = (hitColor != 0 ? colorHit : colorMiss).liveChannels();
-        GL11.glColor3f(color[0], color[1], color[2]);
-        GL11.glEnableClientState(0x8074);
-        points.clear();
-        GL11.glVertexPointer(3, 0, points);
-        GL11.glDrawArrays(3, 0, pointCount);
+        draw.color(color[0], color[1], color[2]);
+        draw.lineStrip(points, pointCount);
         if (showBounds == 1) {
             Vec3 center = hitBounds.minimum.interpolate(hitBounds.maximum, 0.5);
             Vec3 halfSize = hitBounds.maximum.subtract(center);
             Vec3 interpolatedMotion = targetMotion.scale(1.0 - (double) event.partialTick);
             Vec3 relative = center.subtract(event.camera);
             Vec3 position = relative.subtract(interpolatedMotion);
-            GL11.glPushMatrix();
-            GL11.glTranslatef((float) position.x, (float) position.y, (float) position.z);
-            GL11.glScalef((float) halfSize.x, (float) halfSize.y, (float) halfSize.z);
-            Primitives.beginCubeVertices();
-            Primitives.drawCubeOutline();
-            GL11.glPopMatrix();
+            draw.push();
+            draw.translate((float) position.x, (float) position.y, (float) position.z);
+            draw.scale((float) halfSize.x, (float) halfSize.y, (float) halfSize.z);
+            draw.outlineCube();
+            draw.pop();
         }
-        Primitives.endPrimitiveVertices();
     }
 
     @Override

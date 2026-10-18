@@ -32,6 +32,7 @@ import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.net.ChannelBridge;
 import yt.ren.slate.render.GLSM;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.ui.UIController;
 import yt.ren.slate.util.PlayerTags;
 import yt.ren.slate.util.math.Vec3;
@@ -263,21 +264,27 @@ public class ClientHooks {
                     GL11.glEnable(0xbe2);
                     GL11.glBlendFunc(0x302, 0x303);
                     GL11.glEnable(0xb20);
+                    DrawList draw = runtime.drawList;
                     if (!worldEmpty) {
-                        runtime.registry.post(EventTypes.WORLD_RENDER, new WorldRenderEvent(context, camera, partial, 1));
+                        draw.begin();
+                        runtime.registry.post(EventTypes.WORLD_RENDER, new WorldRenderEvent(context, camera, partial, 1, draw));
+                        draw.flush();
                     }
                     if (!screenEmpty) {
                         runtime.savedModelview.clear();
                         runtime.savedProjection.clear();
-                        GL11.glGetFloat(0xba6, runtime.savedModelview);
-                        GL11.glGetFloat(0xba7, runtime.savedProjection);
+                        draw.readMatrices(runtime.savedModelview, runtime.savedProjection);
+                        runtime.savedModelview.clear();
+                        runtime.savedProjection.clear();
                         GL11.glMatrixMode(0x1701);
                         GL11.glLoadIdentity();
                         GL11.glOrtho(0.0, runtime.overlayWidth, runtime.overlayHeight, 0.0, -3000.0, 3000.0);
                         GL11.glMatrixMode(0x1700);
                         GL11.glLoadIdentity();
+                        draw.begin();
                         runtime.registry.post(EventTypes.SCREEN_RENDER, new ScreenRenderEvent(context, camera, (float) runtime.overlayWidth,
-                                (float) runtime.overlayHeight, runtime.savedModelview, runtime.savedProjection, partial, 1));
+                                (float) runtime.overlayHeight, runtime.savedModelview, runtime.savedProjection, partial, 1, draw));
+                        draw.flush();
                     }
                     GLSM.enableTexture();
                     GLSM.enableDepth();

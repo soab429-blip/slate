@@ -2,7 +2,6 @@ package yt.ren.slate.feature.visual;
 
 import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.entity.living.player.PlayerEntity;
-import org.lwjgl.opengl.GL11;
 import yt.ren.slate.core.ClientGameContext;
 import yt.ren.slate.core.ClientRuntime;
 import yt.ren.slate.event.EventTypes;
@@ -11,7 +10,7 @@ import yt.ren.slate.game.NameColors;
 import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
-import yt.ren.slate.render.Primitives;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.render.ScreenProjection;
 import yt.ren.slate.setting.BooleanSetting;
 import yt.ren.slate.setting.ChoiceSetting;
@@ -161,19 +160,18 @@ public class Pointers extends Module {
         EntityRenderDispatcher manager = c.client.getEntityRenderDispatcher();
         float pitch = manager.cameraPitch;
         float yaw = manager.cameraYaw;
-        Primitives.beginPointerVertices();
+        DrawList draw = event.draw;
         float centerX = event.width * 0.5f;
         float centerY = event.height * 0.5f;
-        GL11.glPushMatrix();
+        draw.push();
         if (style.index() == 0) {
-            GL11.glTranslatef(centerX, centerY, 0.0f);
+            draw.translate(centerX, centerY, 0.0f);
         } else {
             float tilt = Floats.max(30.0f, pitch);
-            GL11.glTranslatef(centerX, centerY, 0.0f);
-            GL11.glRotatef(90.0f - tilt, 1.0f, 0.0f, 0.0f);
+            draw.translate(centerX, centerY, 0.0f);
+            draw.rotate(90.0f - tilt, 1.0f, 0.0f, 0.0f);
         }
-        GL11.glLineWidth(1.0f);
-        GL11.glEnable(0xb20);
+        draw.lineWidth(1.0f);
         if (count != 0) {
             float[] range = {nearFarRange.low(), nearFarRange.high()};
             float width = range[1] - range[0];
@@ -185,10 +183,10 @@ public class Pointers extends Module {
                 float z = interpolateFloat((float) entry.previousZ, (float) entry.currentZ, partial);
                 Vec3 camera = event.camera;
                 float angle = horizontalAngle(x, z, camera.x, camera.z, yaw);
-                GL11.glPushMatrix();
-                GL11.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                draw.push();
+                draw.rotate(angle, 0.0f, 0.0f, 1.0f);
                 float scale = scaleSetting.get() * 10.0f;
-                GL11.glScalef(scale, scale, scale);
+                draw.scale(scale, scale, scale);
                 float distance = interpolateFloat(entry.previousDistance, entry.currentDistance, partial);
                 float fraction = clampFraction(
                         (distance - nearFarRange.low()) / denominator);
@@ -196,26 +194,25 @@ public class Pointers extends Module {
                 if (scaleRadius.get()) {
                     radius = radius * (fraction + 1.0f);
                 }
-                GL11.glTranslatef(0.0f, Floats.negate(radius), 0.0f);
+                draw.translate(0.0f, Floats.negate(radius), 0.0f);
                 if (colorMode.index() == 0) {
                     float[] near = colorNear.liveChannels();
                     float[] far = colorFar.liveChannels();
                     float red = interpolateFloat(near[0], far[0], fraction);
                     float green = interpolateFloat(near[1], far[1], fraction);
                     float blue = interpolateFloat(near[2], far[2], fraction);
-                    GL11.glColor3f(red, green, blue);
+                    draw.color(red, green, blue);
                 } else {
-                    GL11.glColor3f(entry.color[0], entry.color[1], entry.color[2]);
+                    draw.color(entry.color[0], entry.color[1], entry.color[2]);
                 }
-                Primitives.drawFilledPointer();
-                GL11.glColor3f(0.0f, 0.0f, 0.0f);
-                Primitives.drawPointerOutline();
-                GL11.glPopMatrix();
+                draw.fillPointer();
+                draw.color(0.0f, 0.0f, 0.0f);
+                draw.outlinePointer();
+                draw.pop();
                 ++index;
             } while (index < count);
         }
-        GL11.glPopMatrix();
-        Primitives.endPrimitiveVertices();
+        draw.pop();
     }
 
     @Override

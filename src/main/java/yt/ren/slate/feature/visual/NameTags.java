@@ -16,6 +16,7 @@ import yt.ren.slate.module.Category;
 import yt.ren.slate.module.Module;
 import yt.ren.slate.module.ModuleId;
 import yt.ren.slate.module.ModuleRegistry.ToggleEvent;
+import yt.ren.slate.render.DrawList;
 import yt.ren.slate.render.GLSM;
 import yt.ren.slate.render.ScreenProjection;
 import yt.ren.slate.setting.BooleanSetting;
@@ -371,6 +372,7 @@ public class NameTags extends Module {
         itemRenderer.zOffset = -200.0f;
         float fov = c.client.gameRenderer.getFov(event.partialTick, true);
         boolean managed = event.managed == 1;
+        DrawList draw = event.draw;
         if (count != 0) {
             float fovScale = 180.0f / fov;
             int index = 0;
@@ -386,43 +388,30 @@ public class NameTags extends Module {
                 Vec3 camera = event.camera;
                 Vec3 relative = new Vec3(px - camera.x, py - camera.y, pz - camera.z);
                 if (ScreenProjection.project(event, relative, screen, depth)) {
-                    GL11.glPushMatrix();
-                    GL11.glTranslatef(screen[0], screen[1], depth[0] * 100.0f);
+                    draw.push();
+                    draw.translate(screen[0], screen[1], depth[0] * 100.0f);
                     float distanceScale = depth[0] * 10.0f;
                     float zoom = distanceScale > 1.0f ? distanceScale : 1.0f;
                     if (!distanceScaling.get()) {
                         zoom = distanceScale;
                     }
                     float size = scale.get() * fovScale * zoom;
-                    GL11.glScalef(size, size, size);
+                    draw.scale(size, size, size);
                     int negativeWidth = -entry.width;
                     double leftDouble = (double) negativeWidth * 0.5 - 2.0;
-                    if (managed) {
-                        GLSM.disableDepth();
-                    } else {
-                        GL11.glDisable(0xb71);
-                    }
                     float left = (float) leftDouble;
                     if (background.get()) {
-                        if (managed) {
-                            GLSM.disableTexture();
-                            GLSM.color(0.0f, 0.0f, 0.0f, 0.5f);
-                        } else {
-                            GL11.glDisable(0xde1);
-                            GL11.glColor4f(0.0f, 0.0f, 0.0f, 0.5f);
-                        }
                         float right = (float) ((double) entry.width * 0.5 + 2.0);
-                        GL11.glBegin(5);
-                        GL11.glVertex2f(left, 0.0f);
-                        GL11.glVertex2f(right, 0.0f);
-                        GL11.glVertex2f(left, -12.0f);
-                        GL11.glVertex2f(right, -12.0f);
-                        GL11.glEnd();
+                        draw.color(0.0f, 0.0f, 0.0f, 0.5f);
+                        draw.rect(left, 0.0f, right, -12.0f);
                     }
+                    draw.beginExternal();
                     if (managed) {
+                        GLSM.disableDepth();
                         GLSM.enableTexture();
                         GLSM.color(1.0f, 1.0f, 1.0f, 1.0f);
                     } else {
+                        GL11.glDisable(0xb71);
                         GL11.glEnable(0xde1);
                         GL11.glColor3f(1.0f, 1.0f, 1.0f);
                     }
@@ -480,7 +469,15 @@ public class NameTags extends Module {
                             }
                         }
                     }
-                    GL11.glPopMatrix();
+                    if (managed) {
+                        GLSM.disableTexture();
+                        GLSM.disableDepth();
+                    } else {
+                        GL11.glDisable(0xde1);
+                        GL11.glDisable(0xb71);
+                    }
+                    draw.endExternal();
+                    draw.pop();
                 }
                 ++index;
             } while (index < count);
