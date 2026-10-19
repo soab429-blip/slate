@@ -42,9 +42,10 @@ public class DrawList {
     private static int[] strip(int... order) {
         int[] triangles = new int[(order.length - 2) * 3];
         for (int i = 0; i < order.length - 2; ++i) {
+            boolean odd = (i & 1) != 0;
             triangles[i * 3] = order[i];
-            triangles[i * 3 + 1] = order[i + 1];
-            triangles[i * 3 + 2] = order[i + 2];
+            triangles[i * 3 + 1] = order[odd ? i + 2 : i + 1];
+            triangles[i * 3 + 2] = order[odd ? i + 1 : i + 2];
         }
         return triangles;
     }
@@ -275,7 +276,7 @@ public class DrawList {
 
     public void rect(float x1, float y1, float x2, float y2) {
         triangle(x1, y1, 0.0f, x2, y1, 0.0f, x1, y2, 0.0f);
-        triangle(x2, y1, 0.0f, x1, y2, 0.0f, x2, y2, 0.0f);
+        triangle(x2, y1, 0.0f, x2, y2, 0.0f, x1, y2, 0.0f);
     }
 
     public void lineStrip(float[] points, int count) {
